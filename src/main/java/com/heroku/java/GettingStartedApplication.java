@@ -31,15 +31,36 @@ public class GettingStartedApplication {
     String database(Map<String, Object> model) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             final var statement = connection.createStatement();
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)");
-            statement.executeUpdate("INSERT INTO ticks VALUES (now())");
+    
+            statement.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS table_timestamp_and_random_string " +
+                "(tick timestamp, random_string varchar(50))"
+            );
+    
+            String randomString = getRandomString();
 
-            final var resultSet = statement.executeQuery("SELECT tick FROM ticks");
-            final var output = new ArrayList<>();
-            while (resultSet.next()) {
-                output.add("Read from DB: " + resultSet.getTimestamp("tick"));
+            // Log database access for CS471 Section 10
+            System.out.println("Thomas Herrera - Database accessed - Random String: " + randomString);
+    
+            try (var insert = connection.prepareStatement(
+                    "INSERT INTO table_timestamp_and_random_string VALUES (now(), ?)")) {
+                insert.setString(1, randomString);
+                insert.executeUpdate();
             }
-
+    
+            final var resultSet = statement.executeQuery(
+                "SELECT tick, random_string FROM table_timestamp_and_random_string ORDER BY tick DESC"
+            );
+    
+            final var output = new ArrayList<String>();
+    
+            while (resultSet.next()) {
+                output.add(
+                    "Timestamp: " + resultSet.getTimestamp("tick") +
+                    " | Random String: " + resultSet.getString("random_string")
+                );
+            }
+    
             model.put("records", output);
             return "database";
         }
