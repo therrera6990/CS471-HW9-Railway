@@ -66,6 +66,10 @@ public class GettingStartedApplication {
         }
     }
 
+    private String getRandomString() {
+        return java.util.UUID.randomUUID().toString().substring(0, 12);
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(GettingStartedApplication.class, args);
     }
